@@ -1,0 +1,816 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Préstamos Machita</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Machita">
+<meta name="theme-color" content="#FCF3F6" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#1A0E14" media="(prefers-color-scheme: dark)">
+<meta name="format-detection" content="telephone=no">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;1,9..144,600&family=Nunito:wght@400;500;600;700;800&family=DM+Mono:wght@500&display=swap">
+<style>
+html{-webkit-text-size-adjust:100%}body{margin:0;overscroll-behavior-y:none}img{max-width:100%}[hidden]{display:none!important}
+body::before{content:"";position:fixed;left:0;right:0;top:0;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:9}
+.wrap{padding-top:env(safe-area-inset-top,0px)}
+/* Layout: libreta rosa de cobranza en el bolsillo — una columna móvil, barra inferior fija, hojas deslizantes para detalle y formularios */
+:root{
+  --bg:#FCF3F6; --surface:#FFFFFF; --sunk:#F7E6ED; --ink:#3A1529; --muted:#8A5F73; --line:#F0D6E0;
+  --accent:#C8336F; --accent2:#8E1F55; --accent-soft:#FADDE8; --on-accent:#FFFFFF; --gold:#A8664A;
+  --late:#B3261E; --late-soft:#FBE0DC; --soon:#A86200; --soon-soft:#FCEBCF; --ok:#2E7D4F; --ok-soft:#DDF0E3;
+  --shadow:0 1px 2px rgba(120,30,70,.06),0 8px 24px rgba(200,51,111,.10);
+  --f-display:"Fraunces",Georgia,"Times New Roman",serif;
+  --f-body:"Nunito",-apple-system,"Segoe UI",system-ui,sans-serif;
+  --f-num:"DM Mono",ui-monospace,"SF Mono",Menlo,monospace;
+  --r:18px;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#1A0E14; --surface:#24131C; --sunk:#301A25; --ink:#F8E7EE; --muted:#C29AAC; --line:#3D2330;
+  --accent:#F07AA8; --accent2:#B8487A; --accent-soft:#4A1F33; --on-accent:#2A0A18; --gold:#E9A985;
+  --late:#FF8A80; --late-soft:#45201D; --soon:#F2BD5C; --soon-soft:#3D2D12; --ok:#7BD69C; --ok-soft:#17321F;
+  --shadow:0 1px 2px rgba(0,0,0,.35),0 8px 24px rgba(0,0,0,.3); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#1A0E14; --surface:#24131C; --sunk:#301A25; --ink:#F8E7EE; --muted:#C29AAC; --line:#3D2330;
+  --accent:#F07AA8; --accent2:#B8487A; --accent-soft:#4A1F33; --on-accent:#2A0A18; --gold:#E9A985;
+  --late:#FF8A80; --late-soft:#45201D; --soon:#F2BD5C; --soon-soft:#3D2D12; --ok:#7BD69C; --ok-soft:#17321F;
+  --shadow:0 1px 2px rgba(0,0,0,.35),0 8px 24px rgba(0,0,0,.3); color-scheme:dark}
+*{box-sizing:border-box}
+html,body{background:var(--bg);color:var(--ink)}
+body{font-family:var(--f-body);font-size:15px;line-height:1.45;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent}
+button,input,select,textarea{font:inherit;color:inherit}
+.num{font-family:var(--f-num);font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.wrap{max-width:720px;margin:0 auto;padding-inline:max(16px,env(safe-area-inset-left,0px)) max(16px,env(safe-area-inset-right,0px));padding-block:0 120px}
+header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding-block:14px 10px;display:flex;align-items:flex-end;justify-content:space-between;gap:12px;border-bottom:1px solid transparent}
+header.top.scrolled{border-bottom-color:var(--line)}
+.brand{font-family:var(--f-display);font-weight:600;font-size:25px;letter-spacing:-.01em;line-height:1.05}
+.brand em{font-style:italic;color:var(--accent)}
+.brand small{display:block;font-family:var(--f-body);font-weight:500;font-size:12px;color:var(--muted);letter-spacing:.02em;margin-top:5px}
+.sync{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--muted)}
+.dot.on{background:var(--ok)}
+h2.sec{font-family:var(--f-body);font-size:12.5px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin:26px 0 10px}
+.view{display:flex;flex-direction:column}
+/* Hero: caja */
+.cash{background:linear-gradient(140deg,var(--accent) 0%,var(--accent2) 100%);color:var(--on-accent);border-radius:24px;box-shadow:var(--shadow);position:relative;overflow:hidden;padding:20px 18px;margin-top:8px;display:grid;gap:14px}
+.cash::after{content:"";position:absolute;right:-40px;top:-40px;width:160px;height:160px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.22),transparent 70%);pointer-events:none}
+.cash>*{position:relative}
+.cash .lbl{font-size:12px;letter-spacing:.06em;text-transform:uppercase;opacity:.85}
+.cash .big{font-family:var(--f-num);font-weight:500;font-size:34px;letter-spacing:-.03em;line-height:1.05}
+.cash .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.cash .row div{min-width:0}
+.cash .mid{font-family:var(--f-num);font-weight:600;font-size:17px}
+.kpis{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px 13px;min-width:0}
+.kpi .lbl{font-size:12px;color:var(--muted)}
+.kpi .v{font-family:var(--f-num);font-weight:600;font-size:18px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kpi .s{font-size:12px;color:var(--muted);margin-top:2px}
+.kpi.gold .v{color:var(--gold)}
+/* Alerts */
+.alerts{display:flex;flex-direction:column;gap:8px}
+.alert{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--soon);border-radius:12px;padding:10px 12px;cursor:pointer}
+.alert.late{border-left-color:var(--late)}
+.alert .who{font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.alert .meta{font-size:12.5px;color:var(--muted)}
+.alert .amt{text-align:right}
+.alert .amt b{display:block;font-family:var(--f-num);font-size:15px}
+.calm{background:var(--ok-soft);color:var(--ok);border-radius:12px;padding:14px;font-weight:500}
+/* Pills */
+.pill{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;font-weight:600;padding:3px 8px;border-radius:99px;white-space:nowrap;letter-spacing:.01em}
+.p-late{background:var(--late-soft);color:var(--late)}
+.p-soon{background:var(--soon-soft);color:var(--soon)}
+.p-ok{background:var(--ok-soft);color:var(--ok)}
+.p-act{background:var(--sunk);color:var(--muted)}
+/* Avatar */
+.av{width:40px;height:40px;border-radius:50%;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;font-family:var(--f-display);font-weight:600;font-style:italic;font-size:15px;flex:none;overflow:hidden}
+.av img{width:100%;height:100%;object-fit:cover}
+.av.lg{width:72px;height:72px;font-size:24px}
+/* Lists */
+.tools{display:flex;flex-direction:column;gap:10px;margin-top:8px}
+.search{width:100%;border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:11px 14px;font-size:16px}
+.search:focus,.field input:focus,.field select:focus,.field textarea:focus{outline:2px solid var(--accent);outline-offset:-1px}
+.chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:99px;padding:6px 12px;font-size:13.5px;font-weight:500;white-space:nowrap;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}
+.chip .c{opacity:.65;margin-left:4px;font-family:var(--f-num);font-size:12px}
+.list{display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;margin-top:12px}
+.item{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;padding:12px 13px;border-top:1px solid var(--line);cursor:pointer;background:none;border-left:0;border-right:0;border-bottom:0;text-align:left;width:100%}
+.item:first-child{border-top:0}
+.item:active{background:var(--sunk)}
+.item .main{min-width:0}
+.item .name{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.item .sub{font-size:12.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.item .right{text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:4px}
+.item .right b{font-family:var(--f-num);font-size:15px}
+.bar{height:4px;background:var(--sunk);border-radius:4px;overflow:hidden;margin-top:6px}
+.bar i{display:block;height:100%;background:var(--accent);border-radius:4px}
+.empty{padding:28px 16px;text-align:center;color:var(--muted)}
+/* Chart */
+.chart{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px 12px 10px}
+.cols{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;align-items:end;height:140px;border-bottom:1px solid var(--line)}
+.col{display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%;gap:4px;min-width:0}
+.col .bars{width:70%;max-width:38px;display:flex;flex-direction:column;justify-content:flex-end;border-radius:5px 5px 0 0;overflow:hidden}
+.col .cap{background:var(--accent)}
+.col .gan{background:var(--gold)}
+.col .t{font-family:var(--f-num);font-size:10.5px;color:var(--muted);white-space:nowrap}
+.xl{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-top:6px;text-align:center;font-size:12px;color:var(--muted)}
+.legend{display:flex;gap:14px;font-size:12px;color:var(--muted);margin-top:10px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:10px;height:10px;border-radius:3px;display:inline-block}
+/* Bottom nav */
+nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:10;background:color-mix(in srgb,var(--surface) 88%,transparent);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px)}
+nav.tabs .in{max-width:720px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr)}
+nav.tabs button{background:none;border:0;padding:10px 4px 9px;min-height:54px;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11.5px;font-weight:500;color:var(--muted);cursor:pointer}
+nav.tabs button svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+nav.tabs button[aria-current="page"]{color:var(--accent)}
+.badge{position:absolute;margin-left:18px;margin-top:-3px;background:var(--late);color:#fff;font-size:10px;font-weight:700;border-radius:99px;padding:1px 5px}
+.fab{position:fixed;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(78px + env(safe-area-inset-bottom,0px));z-index:11;background:linear-gradient(140deg,var(--accent),var(--accent2));color:var(--on-accent);border:0;border-radius:99px;padding:14px 18px;font-weight:600;font-size:15px;box-shadow:var(--shadow);display:flex;gap:8px;align-items:center;cursor:pointer}
+.fab svg{width:18px;height:18px;stroke:currentColor;stroke-width:2.4;fill:none;stroke-linecap:round}
+/* Sheet */
+.overlay{position:fixed;inset:0;z-index:20;background:rgba(8,14,12,.45);display:flex;align-items:flex-end;justify-content:center}
+.sheet{background:var(--bg);width:100%;max-width:720px;max-height:calc(100% - 28px - env(safe-area-inset-top,0px));border-radius:20px 20px 0 0;display:flex;flex-direction:column;animation:up .22s ease-out}
+@keyframes up{from{transform:translateY(30px);opacity:.4}to{transform:none;opacity:1}}
+@media (prefers-reduced-motion:reduce){.sheet{animation:none}}
+.sheet-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 16px 10px;border-bottom:1px solid var(--line)}
+.sheet-head h3{margin:0;font-family:var(--f-display);font-size:20px;font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.x{background:var(--sunk);border:0;border-radius:99px;width:34px;height:34px;display:grid;place-items:center;cursor:pointer;flex:none}
+.x svg{width:16px;height:16px;stroke:currentColor;stroke-width:2.2;fill:none;stroke-linecap:round}
+.sheet-body{overflow-y:auto;padding:14px 16px calc(24px + env(safe-area-inset-bottom,0px));-webkit-overflow-scrolling:touch}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px}
+.stack{display:flex;flex-direction:column;gap:12px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px 14px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px 12px}
+.kv .k{font-size:12px;color:var(--muted)}
+.kv .v{font-family:var(--f-num);font-weight:600;font-size:15.5px;white-space:nowrap}
+.grid3 .kv .v{font-size:13.5px}
+.kv .v.txt{white-space:normal}
+.kv .v.txt{font-family:var(--f-body);font-weight:500;font-size:14.5px}
+.hl{color:var(--gold)}
+.lateTxt{color:var(--late)}
+.btns{display:flex;flex-wrap:wrap;gap:8px}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:11px;padding:10px 14px;font-weight:600;font-size:14px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;text-decoration:none;color:var(--ink)}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.btn.dark{background:var(--accent2);border-color:var(--accent2);color:#fff}
+.btn.danger{color:var(--late);border-color:var(--late-soft)}
+.btn.full{width:100%;justify-content:center;padding:13px}
+.btn:disabled{opacity:.5}
+.btn:focus-visible,.chip:focus-visible,.item:focus-visible,nav.tabs button:focus-visible,.fab:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.field{display:flex;flex-direction:column;gap:5px;min-width:0}
+.field label{font-size:12.5px;font-weight:600;color:var(--muted)}
+.field input,.field select,.field textarea{width:100%;border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:10px 12px;font-size:16px;min-width:0}
+.field textarea{min-height:70px;resize:vertical}
+.hint{font-size:12px;color:var(--muted)}
+.preview{background:var(--accent-soft);border-radius:12px;padding:12px 14px;display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.preview .k{font-size:11.5px;color:var(--muted)}
+.preview .v{font-family:var(--f-num);font-weight:600;font-size:15px}
+.photos{display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:8px}
+.ph{position:relative;aspect-ratio:1;border-radius:10px;overflow:hidden;background:var(--sunk);border:0;padding:0;cursor:pointer;max-width:100%}
+.ph img{width:100%;height:100%;object-fit:cover;display:block}
+.ph .tag{position:absolute;left:5px;bottom:5px;background:rgba(0,0,0,.6);color:#fff;font-size:10px;padding:2px 6px;border-radius:6px}
+.addph{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;border:1.5px dashed var(--line);background:none;color:var(--muted);font-size:12px;font-weight:600}
+.addph svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8}
+.pays{display:flex;flex-direction:column}
+.pay{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;padding:9px 0;border-top:1px solid var(--line)}
+.pay:first-child{border-top:0}
+.pay .d{font-size:13px}
+.pay .n{font-size:12px;color:var(--muted)}
+.mini{background:none;border:0;color:var(--muted);cursor:pointer;padding:4px;font-size:13px}
+.confirm{background:var(--late-soft);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:10px;color:var(--late)}
+.viewer{position:fixed;inset:0;z-index:30;background:rgba(0,0,0,.92);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:16px}
+.viewer img{max-width:100%;max-height:75%;border-radius:8px;object-fit:contain}
+.viewer .btns .btn{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.2);color:#fff}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(140px + env(safe-area-inset-bottom,0px));z-index:40;background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;font-weight:500;font-size:14px;box-shadow:var(--shadow);max-width:calc(100% - 32px)}
+.note{background:var(--sunk);border-radius:12px;padding:12px 14px;font-size:13.5px;color:var(--muted)}
+.note b{color:var(--ink)}
+table.mt{width:100%;border-collapse:collapse;font-size:13.5px}
+table.mt td,table.mt th{padding:7px 4px;border-top:1px solid var(--line);text-align:left}
+table.mt th{font-size:12px;color:var(--muted);font-weight:600;border-top:0}
+table.mt td.r,table.mt th.r{text-align:right}
+.switch{display:flex;align-items:center;gap:10px;font-size:14px}
+.switch input{width:20px;height:20px;accent-color:var(--accent)}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="top" id="top">
+    <div class="brand">Préstamos <em>Machita</em><small id="hoy"></small></div>
+    <div class="sync"><span class="dot" id="dot"></span><span id="syncTxt">Conectando…</span></div>
+  </header>
+
+  <section class="view" id="v-inicio"></section>
+  <section class="view" id="v-prestamos" hidden></section>
+  <section class="view" id="v-clientes" hidden></section>
+  <section class="view" id="v-mas" hidden></section>
+</div>
+
+<button class="fab" id="fab" type="button"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Préstamo</button>
+
+<nav class="tabs" aria-label="Secciones"><div class="in">
+  <button type="button" data-tab="inicio" aria-current="page"><svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>Inicio<span class="badge" id="badge" hidden></span></button>
+  <button type="button" data-tab="prestamos"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 9v.01M18 15v.01"/></svg>Préstamos</button>
+  <button type="button" data-tab="clientes"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14.8c1.8.7 3 2.4 3.5 5.2"/></svg>Clientes</button>
+  <button type="button" data-tab="mas"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h10"/></svg>Más</button>
+</div></nav>
+
+<div class="overlay" id="overlay" hidden><div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+  <div class="sheet-head"><h3 id="sheetTitle"></h3><button class="x" type="button" data-act="close" aria-label="Cerrar"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  <div class="sheet-body" id="sheetBody"></div>
+</div></div>
+
+<div class="viewer" id="viewer" hidden></div>
+<div class="toast" id="toast" hidden></div>
+<input type="file" id="photoInput" accept="image/*" hidden>
+<input type="file" id="xlsInput" accept=".xlsx,.xls,.csv" hidden>
+<input type="file" id="bkInput" accept=".json,application/json" hidden>
+
+<script>
+(function(){
+"use strict";
+/* ---------- estado ---------- */
+const S={loans:[],clients:{},cfg:{capitalInicial:0,diasAviso:3,moraDiaria:0},ready:{l:false,c:false,g:false},
+  tab:"inicio",filter:"activos",q:"",cq:"",sheet:null,db:null,assets:null,dl:null,offline:false};
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const nf=new Intl.NumberFormat("es-PE",{minimumFractionDigits:2,maximumFractionDigits:2});
+const nf0=new Intl.NumberFormat("es-PE",{maximumFractionDigits:0});
+const money=v=>"S/ "+nf.format(Math.round((+v||0)*100)/100);
+const money0=v=>"S/ "+nf0.format(Math.round(+v||0));
+const MES=["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
+const pad=n=>String(n).padStart(2,"0");
+const iso=d=>d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
+const parse=s=>{if(!s)return null;const [y,m,d]=String(s).slice(0,10).split("-").map(Number);return new Date(y,m-1,d)};
+const todayD=()=>{const t=new Date();return new Date(t.getFullYear(),t.getMonth(),t.getDate())};
+const today=()=>iso(todayD());
+const addDays=(s,n)=>{const d=parse(s);d.setDate(d.getDate()+(+n||0));return iso(d)};
+const diff=(a,b)=>Math.round((parse(a)-parse(b))/864e5); // a-b en días
+const fd=(s,yr)=>{const d=parse(s);if(!d)return"—";const y=d.getFullYear()!==todayD().getFullYear()||yr;return d.getDate()+" "+MES[d.getMonth()]+(y?" "+d.getFullYear():"")};
+const slug=s=>String(s||"").normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase().trim().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,80)||"sin-nombre";
+const initials=n=>String(n||"?").trim().split(/\s+/).slice(0,2).map(w=>w[0]||"").join("").toUpperCase();
+const PH={urls:{}};
+const blob=id=>PH.urls[id]||"";
+
+/* ---------- cálculos ---------- */
+function calc(l){
+  const monto=+l.monto||0, i=+l.interes||0;
+  const total=monto*(1+i/100);
+  const pagos=Array.isArray(l.pagos)?l.pagos:[];
+  const pagado=pagos.reduce((a,p)=>a+(+p.monto||0),0);
+  const saldo=Math.max(0,total-pagado);
+  const venc=addDays(l.fecha,l.dias);
+  const rest=diff(venc,today());
+  const ultimoPago=pagos.map(p=>p.fecha).filter(Boolean).sort().pop()||null;
+  let estado;
+  if(pagado>=total-0.009) estado="pagado";
+  else if(rest<0) estado="atrasado";
+  else if(rest<=(+S.cfg.diasAviso||0)) estado="pronto";
+  else estado="activo";
+  const atraso=estado==="atrasado"?-rest:0;
+  const atrasoAlPagar=(estado==="pagado"&&ultimoPago)?Math.max(0,diff(ultimoPago,venc)):0;
+  const ganEsperada=total-monto;
+  const ganCobrada=Math.max(0,Math.min(pagado,total)-monto);
+  const capPend=estado==="pagado"?0:Math.max(0,monto-pagado);
+  const mora=estado==="atrasado"?saldo*(+S.cfg.moraDiaria||0)/100*atraso:0;
+  return {monto,i,total,pagado,saldo,venc,rest,estado,atraso,atrasoAlPagar,ganEsperada,ganCobrada,capPend,mora,ultimoPago,
+    socio:(l.fondeo&&l.fondeo!=="Propio")?l.fondeo:null};
+}
+function pill(c){
+  if(c.estado==="pagado")return `<span class="pill p-ok">Pagado${c.atrasoAlPagar?` · ${c.atrasoAlPagar} d tarde`:""}</span>`;
+  if(c.estado==="atrasado")return `<span class="pill p-late">Atrasado · ${c.atraso} d</span>`;
+  if(c.estado==="pronto")return `<span class="pill p-soon">${c.rest===0?"Vence hoy":c.rest===1?"Vence mañana":"Vence en "+c.rest+" d"}</span>`;
+  return `<span class="pill p-act">Faltan ${c.rest} d</span>`;
+}
+function totals(){
+  const t={calle:0,callePropio:0,porCobrar:0,ganCob:0,ganPend:0,prestadoTot:0,ganEspTot:0,atr:0,atrMonto:0,pronto:0,activos:0,socios:{},mora:0};
+  for(const l of S.loans){const c=l._c;
+    t.prestadoTot+=c.monto;t.ganEspTot+=c.ganEsperada;t.ganCob+=c.ganCobrada;t.calle+=c.capPend;
+    if(!c.socio)t.callePropio+=c.capPend;
+    if(c.estado!=="pagado"){t.porCobrar+=c.saldo;t.ganPend+=c.ganEsperada-c.ganCobrada;t.activos++}
+    if(c.estado==="atrasado"){t.atr++;t.atrMonto+=c.saldo;t.mora+=c.mora}
+    if(c.estado==="pronto")t.pronto++;
+    if(c.socio){const s=t.socios[c.socio]||(t.socios[c.socio]={prestado:0,porDevolver:0,n:0,pend:0});
+      s.prestado+=c.monto;s.n++;if(!l.devueltoSocio){s.porDevolver+=c.monto;if(c.estado!=="pagado")s.pend++}}
+  }
+  t.caja=(+S.cfg.capitalInicial||0)+t.ganCob-t.callePropio;
+  t.tasa=t.prestadoTot?t.ganEspTot/t.prestadoTot*100:0;
+  t.rend=(+S.cfg.capitalInicial)?t.ganCob/(+S.cfg.capitalInicial)*100:0;
+  return t;
+}
+function clientList(){
+  const m={};
+  for(const l of S.loans){const k=slug(l.cliente);
+    const o=m[k]||(m[k]={k,nombre:l.cliente,loans:[],prestado:0,saldo:0,gan:0,atrasos:0,activos:0});
+    o.loans.push(l);o.prestado+=l._c.monto;o.gan+=l._c.ganCobrada;
+    if(l._c.estado!=="pagado"){o.saldo+=l._c.saldo;o.activos++}
+    if(l._c.estado==="atrasado"||l._c.atrasoAlPagar>0)o.atrasos++;
+  }
+  for(const k in S.clients){if(!m[k]&&S.clients[k].nombre)m[k]={k,nombre:S.clients[k].nombre,loans:[],prestado:0,saldo:0,gan:0,atrasos:0,activos:0}}
+  return Object.values(m).sort((a,b)=>b.saldo-a.saldo||a.nombre.localeCompare(b.nombre));
+}
+function av(name,cls){const c=S.clients[slug(name)];return `<span class="av ${cls||""}">${c&&c.foto?`<img src="${blob(c.foto)}" alt="">`:esc(initials(name))}</span>`}
+function sortLoans(arr){const rank={atrasado:0,pronto:1,activo:2,pagado:3};
+  return arr.slice().sort((a,b)=>rank[a._c.estado]-rank[b._c.estado]||(a._c.estado==="atrasado"?b._c.atraso-a._c.atraso:a._c.estado==="pagado"?(b.fecha||"").localeCompare(a.fecha||""):a._c.venc.localeCompare(b._c.venc)))}
+
+/* ---------- almacenamiento en el iPhone (IndexedDB) ---------- */
+const IDB={d:null,
+  open(){return new Promise((res,rej)=>{const r=indexedDB.open("machita",1);r.onupgradeneeded=()=>{const d=r.result;if(!d.objectStoreNames.contains("docs"))d.createObjectStore("docs");if(!d.objectStoreNames.contains("fotos"))d.createObjectStore("fotos")};r.onsuccess=()=>{IDB.d=r.result;res()};r.onerror=()=>rej(r.error)})},
+  run(store,fn){return new Promise((res,rej)=>{const t=IDB.d.transaction(store,"readwrite");fn(t.objectStore(store));t.oncomplete=()=>res();t.onerror=()=>rej(t.error);t.onabort=()=>rej(t.error)})},
+  all(store){return new Promise((res,rej)=>{const out={};const c=IDB.d.transaction(store).objectStore(store).openCursor();c.onsuccess=()=>{const k=c.result;if(k){out[k.key]=k.value;k.continue()}else res(out)};c.onerror=()=>rej(c.error)})}
+};
+const LDB={cache:{},subs:[],
+  notify(){for(const f of LDB.subs)try{f()}catch(_){}},
+  doc(path){return{
+    async set(d){const v=JSON.parse(JSON.stringify(d));await IDB.run("docs",s=>s.put(v,path));LDB.cache[path]=v;LDB.notify()},
+    async update(d){const cur=LDB.cache[path];if(!cur)throw{code:"invalid_argument"};const v=Object.assign({},cur,JSON.parse(JSON.stringify(d)));await IDB.run("docs",s=>s.put(v,path));LDB.cache[path]=v;LDB.notify()},
+    async delete(){await IDB.run("docs",s=>s.delete(path));delete LDB.cache[path];LDB.notify()},
+    onSnapshot(cb){const f=()=>cb({exists:path in LDB.cache,data:()=>LDB.cache[path]});LDB.subs.push(f);f();return()=>{}}}},
+  collection(name){return{onSnapshot(cb){const f=()=>cb({docs:Object.keys(LDB.cache).filter(k=>k.startsWith(name+"/")&&k.split("/").length===2).map(k=>({id:k.slice(name.length+1),data:()=>LDB.cache[k]}))});LDB.subs.push(f);f();return()=>{}}}}
+};
+const LAssets={
+  async upload(b){const id="f"+Date.now().toString(36)+Math.random().toString(36).slice(2,8);await IDB.run("fotos",s=>s.put(b,id));PH.urls[id]=URL.createObjectURL(b);return{id,url:PH.urls[id]}},
+  async delete(id){await IDB.run("fotos",s=>s.delete(id));if(PH.urls[id])URL.revokeObjectURL(PH.urls[id]);delete PH.urls[id];return{deleted:true}}
+};
+const MIME={xlsx:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",json:"application/json",ics:"text/calendar"};
+const LDown={async save({filename,data}){
+  const ext=filename.split(".").pop();const file=new File([data],filename,{type:MIME[ext]||"application/octet-stream"});
+  if(navigator.canShare&&navigator.canShare({files:[file]})){try{await navigator.share({files:[file],title:filename});return{status:"saved"}}catch(e){if(e&&e.name==="AbortError")throw{code:"declined"}}}
+  const u=URL.createObjectURL(file);const a=document.createElement("a");a.href=u;a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);return{status:"saved"}}};
+
+/* ---------- render ---------- */
+function render(){
+  for(const l of S.loans)l._c=calc(l);
+  const t=totals();
+  const td=todayD();
+  $("#hoy").textContent=["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"][td.getDay()]+" "+td.getDate()+" de "+["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"][td.getMonth()];
+  const b=$("#badge");const nAl=t.atr+t.pronto;b.hidden=!nAl;b.textContent=nAl;
+  renderInicio(t);renderPrestamos();renderClientes();renderMas(t);
+  if(S.sheet&&S.sheet.live)S.sheet.live();
+}
+function loadingOr(html){
+  if(S.offline)return `<div class="note" style="margin-top:12px"><b>No se pudo abrir el almacenamiento.</b> Revisa que Safari no esté en modo privado y vuelve a abrir la app.</div>`;
+  if(!(S.ready.l&&S.ready.g))return `<div class="empty">Cargando tus préstamos…</div>`;
+  return html;
+}
+function renderInicio(t){
+  const el=$("#v-inicio");
+  const al=sortLoans(S.loans.filter(l=>l._c.estado==="atrasado"||l._c.estado==="pronto"));
+  const alHtml=al.length?`<div class="alerts">${al.map(l=>{const c=l._c;return `<div class="alert ${c.estado==="atrasado"?"late":""}" role="button" tabindex="0" data-act="loan" data-id="${l.id}">
+      ${av(l.cliente)}<div style="min-width:0"><div class="who">${esc(l.cliente)}</div><div class="meta">${c.estado==="atrasado"?`Venció el ${fd(c.venc)} · <span class="lateTxt">${c.atraso} día${c.atraso===1?"":"s"} de atraso</span>`:`Vence el ${fd(c.venc)}`}</div></div>
+      <div class="amt"><b>${money(c.saldo)}</b>${pill(c)}</div></div>`}).join("")}</div>`
+    :`<div class="calm">Nadie está atrasado ni vence en los próximos ${S.cfg.diasAviso||0} días.</div>`;
+  el.innerHTML=loadingOr(`
+    <div class="cash">
+      <div><div class="lbl">Caja estimada</div><div class="big">${money(t.caja)}</div></div>
+      <div class="row"><div><div class="lbl">Capital en la calle</div><div class="mid">${money(t.calle)}</div></div>
+      <div><div class="lbl">Por cobrar (con interés)</div><div class="mid">${money(t.porCobrar)}</div></div></div>
+    </div>
+    <div class="kpis">
+      <div class="kpi gold"><div class="lbl">Ganancia cobrada</div><div class="v">${money(t.ganCob)}</div><div class="s">${t.rend.toFixed(1)}% sobre tu capital</div></div>
+      <div class="kpi"><div class="lbl">Ganancia por cobrar</div><div class="v">${money(t.ganPend)}</div><div class="s">${t.activos} préstamo${t.activos===1?"":"s"} activo${t.activos===1?"":"s"}</div></div>
+      <div class="kpi"><div class="lbl">Margen promedio</div><div class="v">${t.tasa.toFixed(1)}%</div><div class="s">ganancia / monto prestado</div></div>
+      <div class="kpi"><div class="lbl">Atrasados</div><div class="v ${t.atr?"lateTxt":""}">${t.atr} · ${money0(t.atrMonto)}</div><div class="s">${t.mora>0?"Mora ref. "+money(t.mora):"saldo vencido"}</div></div>
+    </div>
+    ${(()=>{const f=lastBk();const d=f?diff(today(),f):null;return S.loans.length&&(d===null||d>=7)?`<div class="note" style="margin-top:12px"><b>${d===null?"Aún no tienes respaldo.":"Tu último respaldo fue hace "+d+" días."}</b> Ve a <b>Más → Crear respaldo</b> para no perder nada si cambias de celular.</div>`:""})()}
+    <h2 class="sec">Alertas de cobro</h2>${alHtml}
+    <h2 class="sec">Por mes</h2>${chart()}
+  `);
+}
+function chart(){
+  const td=todayD();const months=[];
+  for(let k=5;k>=0;k--){const d=new Date(td.getFullYear(),td.getMonth()-k,1);months.push({y:d.getFullYear(),m:d.getMonth(),cap:0,gan:0})}
+  for(const l of S.loans){const d=parse(l.fecha);if(!d)continue;const mo=months.find(x=>x.y===d.getFullYear()&&x.m===d.getMonth());if(mo){mo.cap+=l._c.monto;mo.gan+=l._c.ganEsperada}}
+  const max=Math.max(1,...months.map(m=>m.cap+m.gan));
+  return `<div class="chart"><div class="cols">${months.map(m=>{const h=(m.cap+m.gan)/max*100;
+    return `<div class="col"><span class="t">${m.cap?(m.cap/1000).toFixed(1).replace(".0","")+"k":""}</span><div class="bars" style="height:${h*0.82}%"><div class="gan" style="flex:${m.gan||0}"></div><div class="cap" style="flex:${m.cap||0}"></div></div></div>`}).join("")}</div>
+    <div class="xl">${months.map(m=>`<span>${MES[m.m]}</span>`).join("")}</div>
+    <div class="legend"><span><i style="background:var(--accent)"></i>Monto prestado</span><span><i style="background:var(--gold)"></i>Ganancia pactada</span></div></div>`;
+}
+function renderPrestamos(){
+  const el=$("#v-prestamos");
+  if(!$("#q")){el.innerHTML=`<div class="tools"><input class="search" id="q" type="search" placeholder="Buscar por nombre o garantía" autocomplete="off"><div class="chips" id="pChips"></div></div><div id="pList"></div>`}
+  const f={todos:()=>true,activos:l=>l._c.estado!=="pagado",atrasado:l=>l._c.estado==="atrasado",pronto:l=>l._c.estado==="pronto",pagado:l=>l._c.estado==="pagado"};
+  const lab={activos:"Activos",atrasado:"Atrasados",pronto:"Por vencer",pagado:"Pagados",todos:"Todos"};
+  const q=S.q.trim().toLowerCase();
+  const base=S.loans.filter(l=>!q||(l.cliente+" "+(l.garantia||"")+" "+(l.notas||"")).toLowerCase().includes(q));
+  const arr=sortLoans(base.filter(f[S.filter]));
+  $("#pChips").innerHTML=Object.keys(lab).map(k=>`<button type="button" class="chip" data-act="filter" data-f="${k}" aria-pressed="${S.filter===k}">${lab[k]}<span class="c">${base.filter(f[k]).length}</span></button>`).join("");
+  $("#pList").innerHTML=loadingOr(arr.length?`<div class="list">${arr.map(loanRow).join("")}</div>`:`<div class="list"><div class="empty">${S.loans.length?"Ningún préstamo en este filtro.":"Aún no hay préstamos. Toca <b>+ Préstamo</b> para registrar el primero, o importa tu Excel desde <b>Más</b>."}</div></div>`);
+}
+function loanRow(l){const c=l._c;const pct=c.total?Math.min(100,c.pagado/c.total*100):0;
+  return `<button type="button" class="item" data-act="loan" data-id="${l.id}">${av(l.cliente)}
+    <div class="main"><div class="name">${esc(l.cliente)}</div><div class="sub">#${l.num||"—"} · ${fd(l.fecha)} → ${fd(c.venc)} · ${+c.i}%${l.garantia?" · "+esc(l.garantia):""}</div>
+    <div class="bar"><i style="width:${pct}%"></i></div></div>
+    <div class="right"><b>${c.estado==="pagado"?money(c.total):money(c.saldo)}</b>${pill(c)}</div></button>`}
+function renderClientes(){
+  const el=$("#v-clientes");
+  if(!$("#cq")){el.innerHTML=`<div class="tools"><input class="search" id="cq" type="search" placeholder="Buscar cliente" autocomplete="off"></div><div id="cList"></div>`}
+  const q=S.cq.trim().toLowerCase();
+  const arr=clientList().filter(c=>!q||c.nombre.toLowerCase().includes(q));
+  $("#cList").innerHTML=loadingOr(arr.length?`<div class="list">${arr.map(c=>`<button type="button" class="item" data-act="client" data-k="${c.k}">${av(c.nombre)}
+      <div class="main"><div class="name">${esc(c.nombre)}</div><div class="sub">${c.loans.length} préstamo${c.loans.length===1?"":"s"} · prestado ${money0(c.prestado)} · ganancia ${money0(c.gan)}</div></div>
+      <div class="right"><b>${c.saldo?money(c.saldo):"—"}</b>${c.atrasos?`<span class="pill p-late">${c.atrasos} atraso${c.atrasos===1?"":"s"}</span>`:c.loans.length?`<span class="pill p-ok">Cumplido</span>`:""}</div></button>`).join("")}</div>`
+      :`<div class="list"><div class="empty">Sin clientes todavía.</div></div>`);
+}
+function lastBk(){const r=LDB.cache["meta/respaldo"];return r&&r.fecha?r.fecha:null}
+function bkTxt(){const f=lastBk();return f?`Último respaldo: ${fd(f,true)}.`:"Todavía no has hecho ningún respaldo."}
+function renderMas(t){
+  const el=$("#v-mas");const ae=document.activeElement;if(ae&&el.contains(ae)&&ae.matches("input"))return;
+  const keepImport=$("#importBox")?$("#importBox").innerHTML:"";const keepBk=$("#bkBox")?$("#bkBox").innerHTML:"";
+  const socios=Object.entries(t.socios);
+  el.innerHTML=loadingOr(`
+    <h2 class="sec">Ajustes</h2>
+    <form class="card stack" id="cfgForm">
+      <div class="grid2">
+        <div class="field"><label for="cfgCap">Capital propio inicial (S/)</label><input id="cfgCap" type="number" inputmode="decimal" step="0.01" value="${+S.cfg.capitalInicial||0}"></div>
+        <div class="field"><label for="cfgAviso">Avisar con (días antes)</label><input id="cfgAviso" type="number" inputmode="numeric" min="0" value="${+S.cfg.diasAviso||0}"></div>
+        <div class="field"><label for="cfgMora">Mora diaria (% del saldo)</label><input id="cfgMora" type="number" inputmode="decimal" step="0.01" min="0" value="${+S.cfg.moraDiaria||0}"></div>
+      </div>
+      <div class="hint">La caja estimada es tu capital inicial + la ganancia cobrada − el capital propio que está en la calle. La mora es referencial y no se suma a la deuda.</div>
+      <button class="btn pri" type="submit">Guardar ajustes</button>
+    </form>
+    <h2 class="sec">Socios que ponen capital</h2>
+    <div class="card">${socios.length?`<table class="mt"><tr><th>Socio</th><th class="r">Prestado</th><th class="r">Por devolver</th></tr>${socios.map(([n,s])=>`<tr><td>${esc(n)}<div class="hint">${s.n} préstamo${s.n===1?"":"s"}</div></td><td class="r num">${money0(s.prestado)}</td><td class="r num ${s.porDevolver?"lateTxt":""}">${money0(s.porDevolver)}</td></tr>`).join("")}</table>
+      <div class="hint" style="margin-top:8px">Marca “Capital devuelto al socio” dentro de cada préstamo cuando le devuelvas su parte.</div>`:`<div class="hint">Cuando un préstamo se haga con plata de otra persona, escribe su nombre en “¿De quién es el capital?” y aquí verás cuánto le debes.</div>`}</div>
+    <h2 class="sec">Respaldo</h2>
+    <div class="card stack">
+      <div class="btns"><button class="btn pri" type="button" data-act="backup">Crear respaldo</button><button class="btn" type="button" data-act="restore">Cargar respaldo</button></div>
+      <div class="hint">Tus datos y fotos viven solo en este iPhone. ${bkTxt()} Guarda el respaldo en Archivos, iCloud Drive o envíatelo por WhatsApp; si cambias o pierdes el celular, lo cargas aquí y recuperas todo.</div>
+      <div id="bkBox">${keepBk}</div>
+    </div>
+    <h2 class="sec">Excel</h2>
+    <div class="card stack">
+      <div class="btns"><button class="btn dark" type="button" data-act="import">Importar Excel</button><button class="btn" type="button" data-act="export">Descargar Excel</button></div>
+      <div class="hint">Importar lee columnas como Cliente, Fecha Préstamo, Monto Prestado, % Interés, Días de interés, Monto Pagado y Garantía. Los préstamos que ya existen (mismo cliente, fecha y monto) no se duplican.</div>
+      <div id="importBox">${keepImport}</div>
+    </div>
+    <h2 class="sec">Avisos</h2>
+    <div class="note">Al abrir la app ves arriba quién está atrasado y quién vence pronto. Para que el iPhone te avise aunque no abras la app, entra al préstamo y toca <b>Agregar al Calendario</b>: te avisa la víspera y el mismo día a las 9 a. m.</div>
+  `);
+}
+
+/* ---------- hojas ---------- */
+function openSheet(title,html,opts){
+  S.sheet=Object.assign({title},opts||{});
+  $("#sheetTitle").textContent=title;$("#sheetBody").innerHTML=html;$("#overlay").hidden=false;
+  document.body.style.overflow="hidden";
+}
+function closeSheet(){S.sheet=null;$("#overlay").hidden=true;$("#sheetBody").innerHTML="";document.body.style.overflow=""}
+function refreshSheet(fn){const body=$("#sheetBody");const st=body.scrollTop;const r=fn();if(!r){closeSheet();return}$("#sheetTitle").textContent=r.title;body.innerHTML=r.html;body.scrollTop=st}
+
+function loanDetail(id){
+  const l=S.loans.find(x=>x.id===id);if(!l)return null;const c=l._c||calc(l);
+  const cli=S.clients[slug(l.cliente)]||{};
+  const fotos=Array.isArray(l.fotos)?l.fotos:[];
+  const msg=c.estado==="pagado"?"":`Hola ${l.cliente.split(" ")[0]}, te escribo para recordarte tu préstamo. ${c.estado==="atrasado"?`Venció el ${fd(c.venc,true)}`:`Vence el ${fd(c.venc,true)}`}. Saldo a pagar: ${money(c.saldo)}. Gracias.`;
+  const phone=String(cli.telefono||"").replace(/\D/g,"");
+  const wa=phone?`https://wa.me/${phone.length===9?"51"+phone:phone}?text=${encodeURIComponent(msg)}`:"";
+  const vd=c.venc.replace(/-/g,"");const vd2=addDays(c.venc,1).replace(/-/g,"");
+  const cal=`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent("Cobrar a "+l.cliente+" "+money(c.saldo))}&dates=${vd}/${vd2}&details=${encodeURIComponent("Préstamo #"+(l.num||"")+" de "+money(c.monto)+" al "+c.i+"%. Total "+money(c.total)+".")}`;
+  const html=`<div class="stack">
+    <div style="display:flex;gap:14px;align-items:center">${av(l.cliente,"lg")}<div style="min-width:0"><div style="font-weight:700;font-size:17px">${esc(l.cliente)}</div>
+      <div class="hint">Préstamo #${l.num||"—"} · ${phone?esc(cli.telefono):"sin teléfono"}</div><div style="margin-top:5px">${pill(c)}</div></div></div>
+    <div class="card"><div class="grid3">
+      <div class="kv"><div class="k">Prestado</div><div class="v">${money(c.monto)}</div></div>
+      <div class="kv"><div class="k">Interés</div><div class="v">${+c.i}%</div></div>
+      <div class="kv"><div class="k">Total a cobrar</div><div class="v">${money(c.total)}</div></div>
+      <div class="kv"><div class="k">Pagado</div><div class="v">${money(c.pagado)}</div></div>
+      <div class="kv"><div class="k">Saldo</div><div class="v ${c.estado==="atrasado"?"lateTxt":""}">${money(c.saldo)}</div></div>
+      <div class="kv"><div class="k">Ganancia</div><div class="v hl">${money(c.ganCobrada)}<span class="hint"> / ${nf0.format(c.ganEsperada)}</span></div></div>
+    </div>
+    <div class="bar" style="margin-top:12px"><i style="width:${c.total?Math.min(100,c.pagado/c.total*100):0}%"></i></div></div>
+    <div class="card grid2">
+      <div class="kv"><div class="k">Fecha del préstamo</div><div class="v txt">${fd(l.fecha,true)}</div></div>
+      <div class="kv"><div class="k">Vence (${+l.dias||0} días)</div><div class="v txt">${fd(c.venc,true)}</div></div>
+      ${c.estado==="atrasado"?`<div class="kv"><div class="k">Retraso</div><div class="v txt lateTxt">${c.atraso} día${c.atraso===1?"":"s"}</div></div>`:""}
+      ${c.mora>0?`<div class="kv"><div class="k">Mora referencial</div><div class="v lateTxt">${money(c.mora)}</div></div>`:""}
+      ${c.estado==="pagado"&&c.ultimoPago?`<div class="kv"><div class="k">Terminó de pagar</div><div class="v txt">${fd(c.ultimoPago,true)}${c.atrasoAlPagar?` <span class="lateTxt">(${c.atrasoAlPagar} d tarde)</span>`:""}</div></div>`:""}
+      <div class="kv"><div class="k">Garantía</div><div class="v txt">${esc(l.garantia)||"—"}</div></div>
+      <div class="kv"><div class="k">Capital de</div><div class="v txt">${esc(l.fondeo||"Propio")}</div></div>
+      ${c.socio?`<label class="switch" style="grid-column:1/-1"><input type="checkbox" id="devSocio" data-id="${l.id}" ${l.devueltoSocio?"checked":""}> Capital devuelto a ${esc(c.socio)}</label>`:""}
+      ${l.notas?`<div class="kv" style="grid-column:1/-1"><div class="k">Notas</div><div class="v txt" style="white-space:pre-wrap">${esc(l.notas)}</div></div>`:""}
+    </div>
+    ${c.estado!=="pagado"?`<div class="card stack" id="payBox">
+      <div style="font-weight:700">Registrar pago</div>
+      <div class="grid2"><div class="field"><label for="payAmt">Monto (S/)</label><input id="payAmt" type="number" inputmode="decimal" step="0.01" min="0" value="${(Math.round(c.saldo*100)/100).toFixed(2)}"></div>
+      <div class="field"><label for="payDate">Fecha</label><input id="payDate" type="date" value="${today()}"></div></div>
+      <div class="field"><label for="payNote">Nota (opcional)</label><input id="payNote" type="text" placeholder="Yape, efectivo, a cuenta…"></div>
+      <div class="btns"><button class="btn pri" type="button" data-act="pay" data-id="${l.id}">Guardar pago</button><button class="btn" type="button" data-act="payall" data-id="${l.id}">Pagó todo (${money(c.saldo)})</button></div>
+    </div>`:""}
+    <div class="card"><div style="font-weight:700;margin-bottom:6px">Pagos</div>${(l.pagos||[]).length?`<div class="pays">${l.pagos.map((p,ix)=>`<div class="pay"><div><div class="d">${fd(p.fecha,true)}</div>${p.nota?`<div class="n">${esc(p.nota)}</div>`:""}</div><b class="num">${money(p.monto)}</b><button class="mini" type="button" data-act="delpay" data-id="${l.id}" data-ix="${ix}" aria-label="Borrar pago">Borrar</button></div>`).join("")}</div>`:`<div class="hint">Todavía no registra pagos.</div>`}</div>
+    <div class="card"><div style="font-weight:700;margin-bottom:8px">Fotos de garantía y documentos</div>
+      <div class="photos">${fotos.map((f,ix)=>`<button type="button" class="ph" data-act="viewph" data-id="${l.id}" data-ix="${ix}"><img src="${blob(f.id)}" alt="Foto ${ix+1}" loading="lazy"><span class="tag">${esc(f.tipo||"garantía")}</span></button>`).join("")}
+      ${S.assets?`<button type="button" class="ph addph" data-act="addph" data-id="${l.id}"><svg viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>Agregar foto</button>`:""}</div>
+      </div>
+    ${c.estado!=="pagado"?`<div class="btns">${wa?`<a class="btn" href="${wa}" target="_blank" rel="noopener">Recordar por WhatsApp</a>`:`<button class="btn" type="button" data-act="client" data-k="${slug(l.cliente)}">Agregar teléfono</button>`}
+      <button class="btn" type="button" data-act="ics" data-id="${l.id}">Agregar al Calendario</button>${phone?`<a class="btn" href="tel:${phone}">Llamar</a>`:""}</div>
+      ${msg?`<div class="note" style="font-size:13px">${esc(msg)} <button class="mini" type="button" data-act="copy" data-t="${esc(msg)}">Copiar</button></div>`:""}`:""}
+    <div class="btns"><button class="btn dark" type="button" data-act="edit" data-id="${l.id}">Editar</button><button class="btn" type="button" data-act="client" data-k="${slug(l.cliente)}">Ver cliente</button><button class="btn danger" type="button" data-act="askdel" data-id="${l.id}">Eliminar</button></div>
+    <div id="delBox"></div>
+  </div>`;
+  return {title:"Préstamo #"+(l.num||""),html};
+}
+function showLoan(id){const r=loanDetail(id);if(!r)return;openSheet(r.title,r.html,{type:"loan",id,live:()=>refreshSheet(()=>loanDetail(id))})}
+
+function clientDetail(k){
+  const cl=clientList().find(x=>x.k===k);const cd=S.clients[k]||{};
+  const nombre=(cl&&cl.nombre)||cd.nombre;if(!nombre)return null;
+  const loans=cl?sortLoans(cl.loans):[];
+  const html=`<div class="stack">
+    <div style="display:flex;gap:14px;align-items:center">${av(nombre,"lg")}<div style="min-width:0"><div style="font-weight:700;font-size:17px">${esc(nombre)}</div>
+    ${S.assets?`<div class="btns" style="margin-top:6px"><button class="btn" type="button" data-act="cliph" data-k="${k}">${cd.foto?"Cambiar foto":"Tomar foto"}</button></div>`:""}</div></div>
+    ${cl?`<div class="card grid3">
+      <div class="kv"><div class="k">Prestado total</div><div class="v">${money0(cl.prestado)}</div></div>
+      <div class="kv"><div class="k">Debe hoy</div><div class="v ${cl.saldo?"lateTxt":""}">${money0(cl.saldo)}</div></div>
+      <div class="kv"><div class="k">Te dejó</div><div class="v hl">${money0(cl.gan)}</div></div>
+    </div>`:""}
+    <form class="card stack" id="cliForm" data-k="${k}">
+      <div class="grid2">
+        <div class="field"><label for="cTel">Celular / WhatsApp</label><input id="cTel" type="tel" inputmode="tel" placeholder="9XX XXX XXX" value="${esc(cd.telefono||"")}"></div>
+        <div class="field"><label for="cDir">Dirección o referencia</label><input id="cDir" type="text" value="${esc(cd.direccion||"")}"></div>
+      </div>
+      <div class="field"><label for="cNotas">Notas del cliente</label><textarea id="cNotas" placeholder="Dónde trabaja, quién lo recomendó…">${esc(cd.notas||"")}</textarea></div>
+      <button class="btn pri" type="submit">Guardar cliente</button>
+    </form>
+    <div class="btns"><button class="btn dark" type="button" data-act="newfor" data-name="${esc(nombre)}">Nuevo préstamo a ${esc(nombre.split(" ")[0])}</button></div>
+    ${loans.length?`<div class="list" style="margin-top:0">${loans.map(loanRow).join("")}</div>`:""}
+  </div>`;
+  return {title:nombre,html};
+}
+function showClient(k){const r=clientDetail(k);if(!r)return;openSheet(r.title,r.html,{type:"client",k,live:null})}
+
+function loanForm(l,presetName){
+  const e=l||{cliente:presetName||"",fecha:today(),monto:"",interes:20,dias:20,garantia:"",fondeo:"Propio",notas:""};
+  const names=[...new Set([...S.loans.map(x=>x.cliente),...Object.values(S.clients).map(c=>c.nombre).filter(Boolean)])].sort();
+  const socios=[...new Set(S.loans.map(x=>x.fondeo).filter(f=>f&&f!=="Propio"))];
+  const tel=(S.clients[slug(e.cliente)]||{}).telefono||"";
+  const html=`<form class="stack" id="loanForm" data-id="${l?l.id:""}">
+    <div class="field"><label for="fCli">Cliente</label><input id="fCli" list="dlCli" required autocomplete="off" value="${esc(e.cliente)}" placeholder="Nombre y apellido"><datalist id="dlCli">${names.map(n=>`<option value="${esc(n)}">`).join("")}</datalist></div>
+    <div class="field"><label for="fTel">Celular (opcional)</label><input id="fTel" type="tel" inputmode="tel" value="${esc(tel)}" placeholder="9XX XXX XXX"></div>
+    <div class="grid2">
+      <div class="field"><label for="fMonto">Monto prestado (S/)</label><input id="fMonto" type="number" inputmode="decimal" step="0.01" min="0" required value="${e.monto}"></div>
+      <div class="field"><label for="fInt">Interés (%)</label><input id="fInt" type="number" inputmode="decimal" step="0.01" min="0" required value="${e.interes}"></div>
+      <div class="field"><label for="fFecha">Fecha del préstamo</label><input id="fFecha" type="date" required value="${e.fecha}"></div>
+      <div class="field"><label for="fDias">Plazo (días)</label><input id="fDias" type="number" inputmode="numeric" min="0" required value="${e.dias}"></div>
+    </div>
+    <div class="preview" id="fPrev"></div>
+    <div class="field"><label for="fGar">Garantía que deja</label><input id="fGar" type="text" value="${esc(e.garantia)}" placeholder="Anillo de oro 18k, terreno, aval…"></div>
+    <div class="field"><label for="fFon">¿De quién es el capital?</label><input id="fFon" list="dlFon" value="${esc(e.fondeo||"Propio")}"><datalist id="dlFon"><option value="Propio">${socios.map(s=>`<option value="${esc(s)}">`).join("")}</datalist><span class="hint">“Propio” si es tu plata; si no, el nombre del socio.</span></div>
+    <div class="field"><label for="fNotas">Notas</label><textarea id="fNotas">${esc(e.notas)}</textarea></div>
+    ${l?"":`<div class="hint">Después de guardar podrás agregar fotos de la garantía y del cliente.</div>`}
+    <button class="btn pri full" type="submit">${l?"Guardar cambios":"Guardar préstamo"}</button>
+  </form>`;
+  openSheet(l?"Editar préstamo #"+(l.num||""):"Nuevo préstamo",html,{type:"form"});
+  updPrev();
+}
+function updPrev(){
+  const p=$("#fPrev");if(!p)return;
+  const m=+$("#fMonto").value||0,i=+$("#fInt").value||0,d=+$("#fDias").value||0,f=$("#fFecha").value;
+  p.innerHTML=`<div><div class="k">Total a cobrar</div><div class="v">${money(m*(1+i/100))}</div></div><div><div class="k">Ganancia</div><div class="v">${money(m*i/100)}</div></div><div><div class="k">Vence</div><div class="v" style="font-family:var(--f-body)">${f?fd(addDays(f,d),true):"—"}</div></div>`;
+}
+
+/* ---------- escritura ---------- */
+const busy=new Set();
+async function save(path,data,mode){
+  if(!S.db){toast("No se puede guardar en esta vista");return false}
+  if(busy.has(path)){toast("Guardando… espera un momento");return false}
+  busy.add(path);
+  try{const ref=S.db.doc(path);
+    if(mode==="update")await ref.update(data);else if(mode==="delete")await ref.delete();else await ref.set(data);
+    return true;
+  }catch(e){toast(errMsg(e));return false}finally{busy.delete(path)}
+}
+function errMsg(e){const c=e&&e.code;
+  if(c==="quota_exceeded")return"Se llenó el espacio de la app. Borra fotos o préstamos antiguos.";
+  if(c==="invalid_argument")return"No tienes permiso para guardar aquí.";
+  if(c==="declined")return"Descarga cancelada.";
+  return"No se pudo guardar. Revisa tu conexión e inténtalo otra vez."}
+function clean(l){const o={};for(const k of ["num","cliente","fecha","monto","interes","dias","garantia","notas","fondeo","devueltoSocio","pagos","fotos","creado"])if(l[k]!==undefined)o[k]=l[k];return o}
+async function saveClient(name,patch){
+  const k=slug(name);const cur=S.clients[k]||{};
+  const next=Object.assign({},cur,{nombre:cur.nombre||name},patch);delete next._id;
+  return save("clientes/"+k,next);
+}
+let toastT;function toast(t){const el=$("#toast");el.textContent=t;el.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>el.hidden=true,2600)}
+
+/* fotos */
+let photoTarget=null;
+function pickPhoto(target){photoTarget=target;const i=$("#photoInput");i.value="";i.click()}
+function shrink(file){return new Promise((res,rej)=>{const url=URL.createObjectURL(file);const img=new Image();
+  img.onload=()=>{const M=1400;let w=img.naturalWidth,h=img.naturalHeight;const s=Math.min(1,M/Math.max(w,h));w=Math.round(w*s);h=Math.round(h*s);
+    const cv=document.createElement("canvas");cv.width=w;cv.height=h;cv.getContext("2d").drawImage(img,0,0,w,h);URL.revokeObjectURL(url);
+    cv.toBlob(b=>b?res(b):rej(new Error("x")),"image/jpeg",0.82)};
+  img.onerror=()=>{URL.revokeObjectURL(url);rej(new Error("img"))};img.src=url})}
+$("#photoInput").addEventListener("change",async e=>{
+  const file=e.target.files&&e.target.files[0];if(!file||!photoTarget||!S.assets)return;
+  const tgt=photoTarget;photoTarget=null;toast("Subiendo foto…");
+  try{let b;try{b=await shrink(file)}catch(_){b=file}
+    const up=await S.assets.upload(b,{type:b.type&&b.type.startsWith("image/")?b.type:"image/jpeg"});
+    if(tgt.kind==="loan"){const l=S.loans.find(x=>x.id===tgt.id);if(!l)return;
+      const fotos=(l.fotos||[]).concat([{id:up.id,tipo:tgt.tipo||"garantía",fecha:today()}]);
+      if(await save("prestamos/"+l.id,{fotos},"update"))toast("Foto guardada");}
+    else{if(await saveClient(tgt.name,{foto:up.id})){toast("Foto del cliente guardada");setTimeout(()=>S.sheet&&S.sheet.type==="client"&&showClient(slug(tgt.name)),400)}}
+  }catch(err){toast(err&&err.code==="quota_exceeded"?"No queda espacio para más fotos.":"No se pudo subir la foto.")}
+});
+function viewPhoto(l,ix){const f=(l.fotos||[])[ix];if(!f)return;const v=$("#viewer");
+  v.innerHTML=`<img src="${blob(f.id)}" alt="Foto"><div class="hint" style="color:#ddd">${esc(f.tipo||"garantía")}${f.fecha?" · "+fd(f.fecha,true):""}</div>
+  <div class="btns"><button class="btn" type="button" data-act="vclose">Cerrar</button>${S.assets?`<button class="btn" type="button" data-act="vtag" data-id="${l.id}" data-ix="${ix}">Marcar como ${f.tipo==="cliente"?"garantía":"cliente"}</button><button class="btn" type="button" data-act="vdel" data-id="${l.id}" data-ix="${ix}">Quitar foto</button>`:""}</div>`;v.hidden=false}
+
+/* ---------- Excel ---------- */
+let xlsxP=null;
+function loadXLSX(){if(window.XLSX)return Promise.resolve(window.XLSX);
+  return xlsxP||(xlsxP=new Promise((res,rej)=>{const s=document.createElement("script");s.src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js";s.onload=()=>res(window.XLSX);s.onerror=()=>{xlsxP=null;rej(new Error("load"))};document.head.appendChild(s)}))}
+const norm=s=>String(s||"").normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase().replace(/[^a-z%]/g,"");
+function toISO(v){if(v instanceof Date)return iso(new Date(v.getFullYear(),v.getMonth(),v.getDate()));
+  if(typeof v==="number"){const d=new Date(Math.round((v-25569)*864e5));return iso(new Date(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate()))}
+  const m=String(v||"").match(/(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})/);if(m){let y=+m[3];if(y<100)y+=2000;return y+"-"+pad(m[2])+"-"+pad(m[1])}
+  const m2=String(v||"").match(/(\d{4})-(\d{2})-(\d{2})/);return m2?m2[0]:null}
+let pending=[];
+$("#xlsInput").addEventListener("change",async e=>{
+  const file=e.target.files&&e.target.files[0];if(!file)return;const box=$("#importBox");box.innerHTML=`<div class="hint">Leyendo ${esc(file.name)}…</div>`;
+  try{const X=await loadXLSX();const wb=X.read(await file.arrayBuffer(),{type:"array",cellDates:true});
+    const found=[];
+    for(const sn of wb.SheetNames){const rows=X.utils.sheet_to_json(wb.Sheets[sn],{header:1,raw:true,defval:null});
+      const hi=rows.findIndex(r=>r&&r.some(c=>norm(c)==="cliente"));if(hi<0)continue;
+      const H=rows[hi].map(norm);const col=(...keys)=>H.findIndex(h=>keys.some(k=>h.includes(k)));
+      const cC=col("cliente"),cF=col("fechaprestamo","fecha"),cM=col("montoprestado","monto"),cI=col("%interes","interes"),cD=col("diasdeinteres","dias","plazo"),cP=col("montopagado","pagado"),cG=col("garantia"),cV=col("vencimiento"),cT=col("telefono","celular");
+      for(const r of rows.slice(hi+1)){if(!r)continue;const name=r[cC];if(!name||typeof name!=="string")continue;
+        const fecha=toISO(r[cF]);const monto=+r[cM];if(!fecha||!(monto>0))continue;
+        let i=+r[cI]||0;if(i>0&&i<1)i=i*100;
+        let dias=cD>=0?+r[cD]:NaN;if(!(dias>=0)&&cV>=0){const v=toISO(r[cV]);dias=v?diff(v,fecha):0}if(!(dias>=0))dias=30;
+        const pag=cP>=0?+r[cP]||0:0;const venc=addDays(fecha,dias);
+        found.push({cliente:name.trim(),fecha,monto,interes:Math.round(i*10000)/10000,dias,garantia:cG>=0&&r[cG]?String(r[cG]).trim():"",notas:"",fondeo:"Propio",devueltoSocio:false,
+          pagos:pag?[{fecha:venc<today()?venc:today(),monto:pag,nota:"Importado del Excel"}]:[],fotos:[],tel:cT>=0&&r[cT]?String(r[cT]):""})}}
+    const key=l=>slug(l.cliente)+"|"+l.fecha+"|"+(+l.monto);const have=new Set(S.loans.map(key));
+    pending=found.filter(l=>!have.has(key(l)));
+    box.innerHTML=found.length?`<div class="note">Encontré <b>${found.length}</b> préstamos; <b>${pending.length}</b> son nuevos${found.length-pending.length?` y ${found.length-pending.length} ya estaban registrados`:""}.</div>
+      ${pending.length?`<button class="btn pri" type="button" data-act="doimport">Agregar ${pending.length} préstamo${pending.length===1?"":"s"}</button>`:""}`:`<div class="note">No encontré una tabla con columna “Cliente” en ese archivo.</div>`;
+  }catch(err){box.innerHTML=`<div class="note">No se pudo leer el archivo. Prueba guardarlo como .xlsx e inténtalo otra vez.</div>`}
+});
+async function doImport(){const box=$("#importBox");let n=nextNum(),ok=0;
+  for(const l of pending){const id="p"+Date.now().toString(36)+Math.random().toString(36).slice(2,6);const tel=l.tel;delete l.tel;
+    l.num=n++;l.creado=new Date().toISOString();box.innerHTML=`<div class="hint">Guardando ${ok+1} de ${pending.length}…</div>`;
+    if(await save("prestamos/"+id,l)){ok++;if(tel&&!(S.clients[slug(l.cliente)]||{}).telefono)await saveClient(l.cliente,{telefono:tel})}}
+  pending=[];box.innerHTML=`<div class="note">Listo: se agregaron <b>${ok}</b> préstamos.</div>`}
+async function doExport(){
+  if(!S.dl){toast("La descarga no está disponible en esta vista");return}
+  try{const X=await loadXLSX();
+    const rows=sortLoans(S.loans).sort((a,b)=>(a.num||0)-(b.num||0)).map(l=>{const c=l._c;return{"N°":l.num,"Cliente":l.cliente,"Celular":(S.clients[slug(l.cliente)]||{}).telefono||"","Fecha Préstamo":l.fecha,"Monto Prestado":c.monto,"% Interés":c.i,"Monto Total a Cobrar":+c.total.toFixed(2),"Días de interés":+l.dias,"Fecha Vencimiento":c.venc,"Estado":c.estado==="pagado"?"Pagado":c.estado==="atrasado"?"Atrasado":"Pendiente","Días de atraso":c.atraso||c.atrasoAlPagar||0,"Monto Pagado":+c.pagado.toFixed(2),"Saldo":+c.saldo.toFixed(2),"Ganancia cobrada":+c.ganCobrada.toFixed(2),"Garantía":l.garantia||"","Capital de":l.fondeo||"Propio","Devuelto al socio":c.socio?(l.devueltoSocio?"Sí":"No"):"","Notas":l.notas||""}});
+    const pays=[];for(const l of S.loans)for(const p of l.pagos||[])pays.push({"N° préstamo":l.num,"Cliente":l.cliente,"Fecha":p.fecha,"Monto":+p.monto,"Nota":p.nota||""});
+    const t=totals();const res=[["Capital propio inicial",+S.cfg.capitalInicial||0],["Capital en la calle",+t.calle.toFixed(2)],["Por cobrar",+t.porCobrar.toFixed(2)],["Ganancia cobrada",+t.ganCob.toFixed(2)],["Ganancia por cobrar",+t.ganPend.toFixed(2)],["Caja estimada",+t.caja.toFixed(2)]];
+    const wb=X.utils.book_new();X.utils.book_append_sheet(wb,X.utils.json_to_sheet(rows),"Préstamos");X.utils.book_append_sheet(wb,X.utils.json_to_sheet(pays),"Pagos");X.utils.book_append_sheet(wb,X.utils.aoa_to_sheet([["Resumen al "+today(),""],...res]),"Resumen");
+    const out=X.write(wb,{type:"array",bookType:"xlsx"});
+    await S.dl.save({filename:"Prestamos_Machita_"+today()+".xlsx",data:new Uint8Array(out)});toast("Excel descargado");
+  }catch(e){toast(e&&e.code?errMsg(e):"No se pudo preparar el Excel")}}
+const nextNum=()=>S.loans.reduce((m,l)=>Math.max(m,+l.num||0),0)+1;
+
+/* ---------- calendario ---------- */
+function addCalendar(l){const c=calc(l);const d=c.venc.replace(/-/g,"");const d2=addDays(c.venc,1).replace(/-/g,"");
+  const now=new Date().toISOString().replace(/[-:]/g,"").slice(0,15)+"Z";
+  const escI=t=>String(t).replace(/[\;,]/g,m=>"\\"+m).replace(/\n/g,"\\n");
+  const ics=["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//Prestamos Machita//ES","BEGIN:VEVENT","UID:"+l.id+"-"+d+"@machita","DTSTAMP:"+now,
+    "DTSTART;VALUE=DATE:"+d,"DTEND;VALUE=DATE:"+d2,"SUMMARY:"+escI("Cobrar a "+l.cliente+" "+money(c.saldo)),
+    "DESCRIPTION:"+escI("Préstamo #"+(l.num||"")+" de "+money(c.monto)+" al "+c.i+"%. Total "+money(c.total)+". Garantía: "+(l.garantia||"-")),
+    "BEGIN:VALARM","TRIGGER:-PT15H","ACTION:DISPLAY","DESCRIPTION:"+escI("Mañana cobras a "+l.cliente),"END:VALARM",
+    "BEGIN:VALARM","TRIGGER:PT9H","ACTION:DISPLAY","DESCRIPTION:"+escI("Hoy cobras a "+l.cliente),"END:VALARM",
+    "END:VEVENT","END:VCALENDAR"].join("\r\n");
+  const u=URL.createObjectURL(new Blob([ics],{type:"text/calendar"}));location.href=u;setTimeout(()=>URL.revokeObjectURL(u),60000)}
+
+/* ---------- respaldo ---------- */
+function b2d(b){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=()=>rej(r.error);r.readAsDataURL(b)})}
+async function doBackup(){
+  try{const fotos=await IDB.all("fotos");const fo={};for(const id in fotos)fo[id]=await b2d(fotos[id]);
+    const docs=Object.assign({},LDB.cache);delete docs["meta/respaldo"];
+    const data=JSON.stringify({app:"prestamos-machita",version:1,fecha:new Date().toISOString(),docs,fotos:fo});
+    await S.dl.save({filename:"Machita_respaldo_"+today()+".json",data});
+    await LDB.doc("meta/respaldo").set({fecha:today()});toast("Respaldo listo");
+  }catch(e){toast(e&&e.code==="declined"?"Respaldo cancelado":"No se pudo crear el respaldo")}}
+let pendingRestore=null;
+function d2b(u){const [h,b64]=u.split(",");const mime=(h.match(/data:([^;]+)/)||[])[1]||"image/jpeg";const bin=atob(b64);const a=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)a[i]=bin.charCodeAt(i);return new Blob([a],{type:mime})}
+async function onBackupFile(file){const box=$("#bkBox");
+  try{const j=JSON.parse(await file.text());if(j.app!=="prestamos-machita"||!j.docs)throw 0;
+    pendingRestore=j;const n=Object.keys(j.docs).filter(k=>k.startsWith("prestamos/")).length;const nf=Object.keys(j.fotos||{}).length;
+    box.innerHTML=`<div class="confirm"><b>Respaldo del ${fd(String(j.fecha).slice(0,10),true)}: ${n} préstamos y ${nf} fotos.</b>Esto reemplaza todo lo que hay ahora en este iPhone.<div class="btns"><button class="btn danger" type="button" data-act="dorestore">Sí, cargar respaldo</button><button class="btn" type="button" data-act="norestore">Cancelar</button></div></div>`;
+  }catch(_){box.innerHTML=`<div class="note">Ese archivo no es un respaldo de Préstamos Machita.</div>`}}
+async function doRestore(){const j=pendingRestore;if(!j)return;const box=$("#bkBox");box.innerHTML=`<div class="hint">Cargando respaldo…</div>`;
+  try{await IDB.run("docs",s=>{s.clear();for(const k in j.docs)s.put(j.docs[k],k)});
+    await IDB.run("fotos",s=>{s.clear();for(const id in (j.fotos||{}))s.put(d2b(j.fotos[id]),id)});
+    for(const id in PH.urls)URL.revokeObjectURL(PH.urls[id]);PH.urls={};
+    const fotos=await IDB.all("fotos");for(const id in fotos)PH.urls[id]=URL.createObjectURL(fotos[id]);
+    LDB.cache=await IDB.all("docs");pendingRestore=null;LDB.notify();
+    box.innerHTML=`<div class="note">Respaldo cargado. Ya puedes ver tus préstamos en <b>Inicio</b>.</div>`;toast("Respaldo cargado");
+  }catch(e){box.innerHTML=`<div class="note">No se pudo cargar el respaldo. Intenta otra vez.</div>`}}
+$("#bkInput").addEventListener("change",e=>{const f=e.target.files&&e.target.files[0];if(f)onBackupFile(f)});
+
+/* ---------- eventos ---------- */
+document.addEventListener("click",async e=>{
+  const t=e.target.closest("[data-act],[data-tab]");if(!t)return;
+  if(t.dataset.tab){setTab(t.dataset.tab);return}
+  const a=t.dataset.act,id=t.dataset.id;const l=id?S.loans.find(x=>x.id===id):null;
+  switch(a){
+    case"close":closeSheet();break;
+    case"loan":showLoan(id);break;
+    case"client":showClient(t.dataset.k);break;
+    case"filter":S.filter=t.dataset.f;renderPrestamos();break;
+    case"edit":if(l)loanForm(l);break;
+    case"newfor":loanForm(null,t.dataset.name);break;
+    case"pay":case"payall":{if(!l)break;const c=calc(l);
+      const amt=a==="payall"?Math.round(c.saldo*100)/100:+$("#payAmt").value;
+      if(!(amt>0)){toast("Escribe un monto mayor a cero");break}
+      const p={fecha:a==="payall"?today():($("#payDate").value||today()),monto:amt,nota:a==="payall"?"Pago total":($("#payNote").value||"").trim()};
+      t.disabled=true;if(await save("prestamos/"+l.id,{pagos:(l.pagos||[]).concat([p])},"update"))toast("Pago de "+money(amt)+" registrado");t.disabled=false;break}
+    case"delpay":{if(!l)break;const ix=+t.dataset.ix;if(t.dataset.sure!=="1"){t.dataset.sure="1";t.textContent="¿Seguro?";t.style.color="var(--late)";break}
+      const pagos=(l.pagos||[]).filter((_,i)=>i!==ix);if(await save("prestamos/"+l.id,{pagos},"update"))toast("Pago borrado");break}
+    case"askdel":$("#delBox").innerHTML=`<div class="confirm"><b>¿Eliminar el préstamo #${l.num||""} de ${esc(l.cliente)}?</b>Se borran también sus pagos. No se puede deshacer.<div class="btns"><button class="btn danger" type="button" data-act="dodel" data-id="${id}">Sí, eliminar</button><button class="btn" type="button" data-act="nodel">Cancelar</button></div></div>`;$("#delBox").scrollIntoView({block:"nearest"});break;
+    case"nodel":$("#delBox").innerHTML="";break;
+    case"dodel":if(await save("prestamos/"+id,null,"delete")){closeSheet();toast("Préstamo eliminado")}break;
+    case"addph":pickPhoto({kind:"loan",id,tipo:"garantía"});break;
+    case"cliph":pickPhoto({kind:"client",name:(S.clients[t.dataset.k]||{}).nombre||($("#sheetTitle").textContent)});break;
+    case"viewph":if(l)viewPhoto(l,+t.dataset.ix);break;
+    case"vclose":$("#viewer").hidden=true;break;
+    case"vtag":{if(!l)break;const ix=+t.dataset.ix;const fotos=(l.fotos||[]).map((f,i)=>i===ix?Object.assign({},f,{tipo:f.tipo==="cliente"?"garantía":"cliente"}):f);
+      if(await save("prestamos/"+l.id,{fotos},"update")){$("#viewer").hidden=true;toast("Etiqueta cambiada")}break}
+    case"vdel":{if(!l)break;if(t.dataset.sure!=="1"){t.dataset.sure="1";t.textContent="Toca otra vez para quitar";break}
+      const ix=+t.dataset.ix;const f=(l.fotos||[])[ix];const fotos=(l.fotos||[]).filter((_,i)=>i!==ix);
+      if(await save("prestamos/"+l.id,{fotos},"update")){$("#viewer").hidden=true;toast("Foto quitada");try{if(f&&S.assets)await S.assets.delete(f.id)}catch(_){}}break}
+    case"import":$("#xlsInput").value="";$("#xlsInput").click();break;
+    case"doimport":t.disabled=true;await doImport();break;
+    case"export":t.disabled=true;await doExport();t.disabled=false;break;
+    case"ics":if(l)addCalendar(l);break;
+    case"backup":t.disabled=true;await doBackup();t.disabled=false;break;
+    case"restore":$("#bkInput").value="";$("#bkInput").click();break;
+    case"dorestore":t.disabled=true;await doRestore();break;
+    case"norestore":pendingRestore=null;$("#bkBox").innerHTML="";break;
+    case"copy":try{await navigator.clipboard.writeText(t.dataset.t);toast("Mensaje copiado")}catch(_){toast("Mantén presionado el texto para copiarlo")}break;
+  }
+});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"){if(!$("#viewer").hidden)$("#viewer").hidden=true;else if(S.sheet)closeSheet()}
+  if((e.key==="Enter"||e.key===" ")&&e.target.matches(".alert[role=button]")){e.preventDefault();e.target.click()}});
+$("#overlay").addEventListener("click",e=>{if(e.target.id==="overlay")closeSheet()});
+document.addEventListener("input",e=>{
+  if(e.target.id==="q"){S.q=e.target.value;renderPrestamos()}
+  else if(e.target.id==="cq"){S.cq=e.target.value;renderClientes()}
+  else if(["fMonto","fInt","fDias","fFecha"].includes(e.target.id))updPrev();
+  else if(e.target.id==="fCli"){const c=S.clients[slug(e.target.value)];const tel=$("#fTel");if(c&&c.telefono&&!tel.value)tel.value=c.telefono}
+});
+document.addEventListener("change",async e=>{
+  if(e.target.id==="devSocio"){const id=e.target.dataset.id;if(await save("prestamos/"+id,{devueltoSocio:e.target.checked},"update"))toast(e.target.checked?"Marcado como devuelto":"Marcado como pendiente")}
+});
+document.addEventListener("submit",async e=>{
+  e.preventDefault();const f=e.target;
+  if(f.id==="loanForm"){
+    const id=f.dataset.id;const old=id?S.loans.find(x=>x.id===id):null;
+    const cliente=$("#fCli").value.trim().replace(/\s+/g," ");if(!cliente){toast("Escribe el nombre del cliente");return}
+    const monto=+$("#fMonto").value;if(!(monto>0)){toast("El monto debe ser mayor a cero");return}
+    const body=Object.assign({},old?clean(old):{pagos:[],fotos:[],num:nextNum(),creado:new Date().toISOString(),devueltoSocio:false},{
+      cliente,monto,interes:+$("#fInt").value||0,fecha:$("#fFecha").value||today(),dias:+$("#fDias").value||0,
+      garantia:$("#fGar").value.trim(),fondeo:$("#fFon").value.trim()||"Propio",notas:$("#fNotas").value.trim()});
+    const nid=id||("p"+Date.now().toString(36)+Math.random().toString(36).slice(2,6));
+    const btn=f.querySelector("button[type=submit]");btn.disabled=true;
+    if(await save("prestamos/"+nid,body)){
+      const tel=$("#fTel").value.trim();const cur=S.clients[slug(cliente)]||{};
+      if(tel&&tel!==cur.telefono)await saveClient(cliente,{telefono:tel});
+      toast(id?"Cambios guardados":"Préstamo guardado");S.loans.find(x=>x.id===nid)?showLoan(nid):setTimeout(()=>showLoan(nid),500);
+    }else btn.disabled=false;
+  }else if(f.id==="cliForm"){
+    const k=f.dataset.k;const nombre=(S.clients[k]||{}).nombre||$("#sheetTitle").textContent;
+    if(await saveClient(nombre,{telefono:$("#cTel").value.trim(),direccion:$("#cDir").value.trim(),notas:$("#cNotas").value.trim()}))toast("Cliente guardado");
+  }else if(f.id==="cfgForm"){
+    const cfg=Object.assign({},S.cfg,{capitalInicial:+$("#cfgCap").value||0,diasAviso:Math.max(0,parseInt($("#cfgAviso").value)||0),moraDiaria:Math.max(0,+$("#cfgMora").value||0)});
+    if(await save("config/general",cfg))toast("Ajustes guardados");
+  }
+});
+function setTab(tab){S.tab=tab;for(const v of ["inicio","prestamos","clientes","mas"])$("#v-"+v).hidden=v!==tab;
+  document.querySelectorAll("nav.tabs button").forEach(b=>b.dataset.tab===tab?b.setAttribute("aria-current","page"):b.removeAttribute("aria-current"));
+  try{localStorage.setItem("pm-tab",tab)}catch(_){}window.scrollTo(0,0)}
+$("#fab").addEventListener("click",()=>loanForm(null));
+window.addEventListener("scroll",()=>$("#top").classList.toggle("scrolled",window.scrollY>4),{passive:true});
+setInterval(()=>{if(!S.sheet||S.sheet.type!=="form")render()},60*60*1000); // cambia de día
+
+/* ---------- arranque ---------- */
+try{const t=localStorage.getItem("pm-tab");if(t&&["inicio","prestamos","clientes","mas"].includes(t))setTab(t)}catch(_){}
+render();
+(async()=>{
+  try{await IDB.open()}catch(e){S.offline=true;$("#syncTxt").textContent="Sin almacenamiento";render();return}
+  try{const [docs,fotos]=await Promise.all([IDB.all("docs"),IDB.all("fotos")]);LDB.cache=docs;for(const id in fotos)PH.urls[id]=URL.createObjectURL(fotos[id])}catch(_){}
+  try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist()}catch(_){}
+  S.db=LDB;S.assets=LAssets;S.dl=LDown;
+  $("#dot").classList.add("on");$("#syncTxt").textContent="En este iPhone";
+  LDB.collection("prestamos").onSnapshot(s=>{S.loans=s.docs.map(d=>Object.assign({id:d.id},d.data()));S.ready.l=true});
+  LDB.collection("clientes").onSnapshot(s=>{const m={};s.docs.forEach(d=>m[d.id]=Object.assign({},d.data()));S.clients=m;S.ready.c=true});
+  LDB.doc("config/general").onSnapshot(s=>{if(s.exists)S.cfg=Object.assign({capitalInicial:0,diasAviso:3,moraDiaria:0},s.data());S.ready.g=true});
+  LDB.subs.push(render);render();
+  if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
+})();
+})();
+</script>
+
+</body>
+</html>

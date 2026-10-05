@@ -1,0 +1,27 @@
+PRÉSTAMOS MACHITA — app para iPhone (sin cuenta de Claude)
+
+Estos archivos son la app. NO contienen ningún dato de préstamos,
+así que puedes subirlos a GitHub sin problema.
+El archivo con tus préstamos (Machita_respaldo_inicial.json) va aparte:
+NO lo subas a GitHub; pásalo al iPhone por WhatsApp, AirDrop o correo.
+
+1) PUBLICAR (desde la computadora, una sola vez)
+   - Entra a github.com > botón "New" (nuevo repositorio).
+   - Nombre: machita  |  Public  |  Create repository.
+   - Clic en "uploading an existing file", arrastra TODOS estos archivos
+     (index.html, sw.js, manifest.webmanifest, los 3 .png) y "Commit changes".
+   - Settings > Pages > Source: "Deploy from a branch" > main / (root) > Save.
+   - En 1-2 minutos la app queda en: https://TU-USUARIO.github.io/machita/
+
+2) INSTALAR EN EL IPHONE
+   - Abre ese enlace en Safari.
+   - Compartir > Añadir a pantalla de inicio > (Abrir como app web activado) > Añadir.
+
+3) CARGAR LOS 33 PRÉSTAMOS
+   - Envía Machita_respaldo_inicial.json al iPhone y guárdalo en Archivos.
+   - En la app: Más > Cargar respaldo > elige el archivo > Sí, cargar respaldo.
+
+IMPORTANTE
+   - Los datos y fotos se guardan solo en ese iPhone.
+   - Haz "Más > Crear respaldo" cada semana y guárdalo en iCloud Drive o WhatsApp.
+   - No borres la app ni los "datos de sitios web" de Safari sin tener un respaldo.
